@@ -10,13 +10,13 @@ class Macruby < Formula
 
   def options
   [
-    ["--override-system-ruby", "Override system ruby. Conflicts with ruby Formula."],
+    #["--override-system-ruby", "Override system ruby. Conflicts with ruby Formula."],
     ["--with-doc", "Allow documentation to be generated."]
   ]
   end
 
   def install
-    
+
     # Skip doc generation
     inreplace 'Rakefile' do |s|
         s.gsub! /, :doc/, ""
@@ -27,7 +27,7 @@ class Macruby < Formula
     #
     # Also, 'rake install' will want to put stuff in '/Developer'
     # and '/Library/Application Support/Developer' regardless
-    # of the *_instdir settings. Those are stuff like templates 
+    # of the *_instdir settings. Those are stuff like templates
     # for XCode. Let's forget about them for now, but
     # we stage the install via DESTDIR and pick the relevant stuff
     # from there.
@@ -35,9 +35,9 @@ class Macruby < Formula
     # First, build.
     framework_instdir = File.join(prefix, "Frameworks")
     sym_instdir = prefix
-    system "rake", "jobs=2", "framework_instdir=#{framework_instdir}", "sym_instdir=#{sym_instdir}"
+    system "rake", "jobs=#{Hardware.processor_count}", "framework_instdir=#{framework_instdir}", "sym_instdir=#{sym_instdir}"
 
-    # Then, stage the install. At some point it fails if we don't give it 
+    # Then, stage the install. At some point it fails if we don't give it
     # the same *_instdir as for the build phase.
     stage = "#{Dir.pwd}/tmp/stage"
     mkdir_p stage
@@ -49,7 +49,7 @@ class Macruby < Formula
     ohai "Installing framework to #{framework_instdir}"
     prefix.install File.join(stage, framework_instdir)
 
-    # 'rake install'-ed bin and share contain broken symlinks to the 
+    # 'rake install'-ed bin and share contain broken symlinks to the
     # framework, built assuming they are in /usr/local and the
     # first occurence of the version is the one from the framework tree.
     # So let's forget about them and use the framework directly.
